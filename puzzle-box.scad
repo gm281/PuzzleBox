@@ -9,7 +9,7 @@ module thread(pitch=3.0, radius=40.0, height=10.0, male=true) {
         intersection() {
             translate([0,0,-pitch]) {
                 if (male) {
-                    threading(pitch=pitch, d=2*radius, windings = height/pitch + 1, angle = 45);
+                    translate([0,0,-pitch]) threading(pitch=pitch, d=2*radius, windings = height/pitch + 2, angle = 45);
                 } else {
                     spacing=pitch/2;
                     Threading(pitch = pitch, d=2*radius+spacing, windings = height/pitch+2, angle = 45);
