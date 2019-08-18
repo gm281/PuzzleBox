@@ -45,9 +45,15 @@ module inner_ring(inner_diameter=80, outer_diameter=90, height=15, incision_coun
 }
 
 module threaded_nut(pitch=3.0, inner_diameter=100, outer_diameter=110, height=10.0) {
-    union() {
-        thread(pitch=pitch, radius=inner_diameter, height=height, male=false);
-        hollow_cylinder(outer_diameter=outer_diameter, inner_diameter=inner_diameter+pitch/2-0.1, height=height);
+    difference() {
+        union() {
+            thread(pitch=pitch, radius=inner_diameter, height=height, male=false);
+            hollow_cylinder(outer_diameter=outer_diameter, inner_diameter=inner_diameter+pitch/2-0.1, height=height);
+        }
+        
+        indentation_d=30;
+        indentation_de=2;
+        translate([-outer_diameter,0,indentation_d+height-indentation_de])rotate([0,90,0])cylinder(r=indentation_d,h=2*outer_diameter);  
     }
 }
 
