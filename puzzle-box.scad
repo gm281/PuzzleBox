@@ -68,10 +68,34 @@ wall_height=14,
 disc_height=3,
 incision_depth=8,
 incision_diameter=6) {
-    thread(pitch=pitch, radius=inner_radius, height=thread_height, male=true);
-    outer_ring(inner_diameter=inner_wall_radius, outer_diameter=outer_radius, height=wall_height, incision_count=6, incision_depth=incision_depth, incision_diameter=incision_diameter);
-    translate([0,0,-disc_height])
-    hollow_cylinder(outer_diameter=outer_radius, inner_diameter=inner_radius-pitch, height=disc_height);
+    translate([0,0,disc_height]) thread(pitch=pitch, radius=inner_radius+pitch, height=thread_height, male=true);
+    translate([0,0,disc_height]) outer_ring(inner_diameter=inner_wall_radius, outer_diameter=outer_radius, height=wall_height, incision_count=6, incision_depth=incision_depth, incision_diameter=incision_diameter);
+    hollow_cylinder(outer_diameter=outer_radius, inner_diameter=inner_radius, height=disc_height);
+}
+
+module rotating_lock_base(
+pitch=3.0,
+inner_radius=20.0,
+inner_wall_radius=35.0,
+outer_radius=40.0,
+thread_height=12,
+wall_height=14,
+disc_height=3,
+incision_depth=8,
+incision_diameter=6,
+stem_height=40)
+{
+    lock_base(
+pitch=pitch,
+inner_radius=inner_radius,
+inner_wall_radius=inner_wall_radius,
+outer_radius=outer_radius,
+thread_height=thread_height,
+wall_height=wall_height,
+disc_height=disc_height,
+incision_depth=incision_depth,
+incision_diameter=incision_diameter);
+    
 }
 
 
@@ -86,7 +110,8 @@ outer_thickness=8;
 outer_incision=outer_thickness-2;
 incision_diameter=6;
 
-r1=30;
+r0=27;
+r1=r0+pitch;
 r2=r1+outer_thickness-inner_thickness;
 r3=r2+spacing;
 r4=r3+inner_thickness;
@@ -97,10 +122,10 @@ r6=r5+outer_thickness;
 translate([60,100,0])
 threaded_nut(pitch=pitch, inner_diameter=r1, outer_diameter=r2, height=h1);
 
-translate([120,0,disc_height])
-lock_base(
+translate([120,0,0])
+rotating_lock_base(
 pitch=pitch,
-inner_radius=r1,
+inner_radius=r0,
 inner_wall_radius=r5,
 outer_radius=r6,
 thread_height=h1,
