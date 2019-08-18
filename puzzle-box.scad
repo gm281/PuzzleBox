@@ -23,12 +23,6 @@ module thread(pitch=3.0, radius=40.0, height=10.0, male=true) {
         }
 }
 
-module hollow_cylinder(outer_diameter=100, inner_diameter=90, height=10.0) {
-    translate([0,0,height/2]) difference() {
-        cylinder(r=outer_diameter,h=height,center=true);
-        cylinder(r=inner_diameter,h=height*1.1,center=true);
-    }
-}
 
 module outer_ring(inner_diameter=100, outer_diameter=110, height=15, incision_count=6, incision_depth=6, incision_diameter=6) {
     difference() {
@@ -47,12 +41,16 @@ module inner_ring(inner_diameter=80, outer_diameter=90, height=15, incision_coun
 }
 
 module threaded_nut(pitch=3.0, inner_diameter=100, outer_diameter=110, height=10.0) {
-    difference() {
         union() {
             thread(pitch=pitch, radius=inner_diameter, height=height, male=false);
             hollow_cylinder(outer_diameter=outer_diameter, inner_diameter=inner_diameter+pitch/2-0.1, height=height);
         }
-        
+}
+
+module threaded_nut_with_holds(pitch=3.0, inner_diameter=100, outer_diameter=110, height=10.0) {
+    difference() {
+        threaded_nut(pitch=pitch, inner_diameter=inner_diameter, outer_diameter=outer_diameter, height=height);
+                
         indentation_d=30;
         indentation_de=2;
         translate([-outer_diameter,0,indentation_d+height-indentation_de])rotate([0,90,0])cylinder(r=indentation_d,h=2*outer_diameter);  
@@ -116,20 +114,6 @@ incision_diameter=incision_diameter);
     }
 }
 
-module sphere_slice(
-smaller_radius=37,
-larger_radius=40,
-height=3) {
-    y = (larger_radius*larger_radius - smaller_radius * smaller_radius - height*height) / (2*height);
-    r = sqrt(y*y+larger_radius*larger_radius);
-    
-    translate([0,0,-y])
-    intersection() {
-        sphere(r=r);
-        translate([-r, -r, y]) cube([2*r, 2*r, height]);
-    }
-}
-
 module bearing_base_screws(r=30, screw_d=6, z_incision=2.4) {
     screw_count=6;
     for (i = [0 : 360/screw_count : 360-1]) {
@@ -164,6 +148,33 @@ module cup(disc_height=4, screw_r=20) {
         cylinder(d=73, h=disc_height);
         bearing_base_screws(r=screw_r, screw_d=3, z_incision=0);
     }
+    th_h=10;
+    thread_d=30;
+    translate([0,0,165 - th_h])
+    // TODO remove the holds
+    mirror([1,0,0])
+    threaded_nut(pitch=3.0, inner_diameter=thread_d, outer_diameter=33, height=th_h);
+    
+    translate([0,0,167 + 20]) {
+        sphere_slice(smaller_radius=10, larger_radius=38.5, height=6);
+        translate([0,0,-th_h+0.05])
+        mirror([1,0,0])
+        thread(pitch=3.0, radius=thread_d, height=th_h, male=true);
+        difference() {
+            hold_h=3;
+            hold_cnt=3;
+            union() {
+                for (i = [0 : 360/hold_cnt : 360-1]) {
+                    rotate([0,0,i])
+                    translate([-20,hold_h/2,3])
+                    rotate([0,-6,0])
+                    rotate([90,0,0])
+                    eliptical_hold(r1=16, r2=10, h=hold_h);
+                }
+            }
+            translate([-50,-50,-100+0.05]) cube([100,100,100]);
+        }
+    }
 }
 
 module rotating_lock_top(outer_r=40, lock_inner_r=30, lock_outer_r=35, height=10, disc_height=4, incision_diameter=6, screw_r=20) {
@@ -197,8 +208,9 @@ r6=r5+outer_thickness;
 screw_r = r6*0.35 /* bearing base */ * 0.75;
 
 
+
 translate([-10,130,0])
-threaded_nut(pitch=pitch, inner_diameter=r1, outer_diameter=r2, height=h1);
+threaded_nut_with_holds(pitch=pitch, inner_diameter=r1, outer_diameter=r2, height=h1);
 
 translate([145,0,0])
 rotating_lock_base(
@@ -213,7 +225,6 @@ incision_depth=outer_incision,
 incision_diameter=incision_diameter,
 screw_r=screw_r);
 
-
 translate([130,150,0])
 under_bearing_base(
 smaller_radius=r6,
@@ -221,7 +232,7 @@ larger_radius=r6+under_bearing_base_hight,
 height=under_bearing_base_hight,
 screw_r=screw_r);
 
-translate([0,0,0])
+translate([-150,0,0])
 rotating_lock_top(
 outer_r=r6,
 lock_inner_r=r3,
@@ -231,7 +242,7 @@ disc_height=disc_height,
 incision_diameter=incision_diameter,
 screw_r=screw_r);
 
-translate([300,0,0]) {
+translate([0,0,0]) {
     cup(disc_height=disc_height, screw_r=screw_r);
 }
 
