@@ -10,6 +10,8 @@ module thread(pitch=3.0, radius=40.0, height=10.0, male=true) {
             translate([0,0,-pitch]) {
                 if (male) {
                     translate([0,0,-pitch]) threading(pitch=pitch, d=2*radius, windings = height/pitch + 2, angle = 45);
+                    hollow_cylinder(outer_diameter=radius-pitch/2, inner_diameter=radius-pitch, height=height+pitch);
+
                 } else {
                     spacing=pitch/2;
                     Threading(pitch = pitch, d=2*radius+spacing, windings = height/pitch+2, angle = 45);
@@ -83,7 +85,8 @@ translate([120,0,disc_height])
 union() {
     thread(pitch=pitch, radius=r1, height=h1, male=true);
     outer_ring(inner_diameter=r5, outer_diameter=r6, height=h2, incision_count=6, incision_depth=outer_incision, incision_diameter=incision_diameter);
-    translate([0,0,-disc_height/2]) cylinder(r=r6,h=disc_height,center=true);
+    translate([0,0,-disc_height])
+    hollow_cylinder(outer_diameter=r6, inner_diameter=r1-pitch, height=disc_height);
 }
 
 translate([0,0,disc_height])
