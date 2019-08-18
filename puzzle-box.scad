@@ -1,5 +1,6 @@
 include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/bolts_nuts_threaded_rods_-_OpenSCAD_library_Threading/files/Threading.scad>
 include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/Gear_Bearing/bearing.scad>
+include <shapes-library.scad>
 
 showexample = 0;
 
@@ -85,7 +86,8 @@ incision_depth=8,
 incision_diameter=6,
 stem_height=40,
 above_bearing_clearence=6,
-bearing_thickness=15)
+bearing_thickness=15,
+screw_r=40)
 {
     translate([0,0,stem_height])
     lock_base(
@@ -108,9 +110,52 @@ incision_diameter=incision_diameter);
     translate([0,0,bearing_thickness+above_bearing_clearence])
     cylinder(r=outer_radius, h=disc_height);
     
-    bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness);
+    difference() {
+        bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness);
+        bearing_base_screws(r=screw_r, screw_d=5, z_incision=0);
+    }
 }
 
+module sphere_slice(
+smaller_radius=37,
+larger_radius=40,
+height=3) {
+    y = (larger_radius*larger_radius - smaller_radius * smaller_radius - height*height) / (2*height);
+    r = sqrt(y*y+larger_radius*larger_radius);
+    
+    translate([0,0,-y])
+    intersection() {
+        sphere(r=r);
+        translate([-r, -r, y]) cube([2*r, 2*r, height]);
+    }
+}
+
+module bearing_base_screws(r=30, screw_d=6, z_incision=2.4) {
+    screw_count=6;
+    for (i = [0 : 360/screw_count : 360-1]) {
+        translate([0,0, z_incision]) rotate([0,0,i]) rotate([0, 180, 0]) translate([r,0,0]) screw_ind(screw_th=screw_d, screw_l=0);
+    }
+}
+
+module under_bearing_base(
+smaller_radius=37,
+larger_radius=40,
+height=3,
+bearing_base_height=3,
+hex_access_radius=8,
+screw_r=40) {
+    bearing_base_r = smaller_radius*0.35;
+    difference() {
+        union() {
+            sphere_slice(smaller_radius=smaller_radius, larger_radius=larger_radius, height=height);
+            translate([0,0,height]) cylinder(r=bearing_base_r, h=bearing_base_height);
+        }
+        union() {
+            translate([0,0,-0.05]) cylinder(r=hex_access_radius, h=bearing_base_height+height+0.1);
+            bearing_base_screws(r=screw_r, screw_d=6, z_incision=2.4);
+        }
+    }
+}
 
 h1=14;
 h2=15;
@@ -122,6 +167,7 @@ inner_thickness=4;
 outer_thickness=10;
 outer_incision=outer_thickness-2;
 incision_diameter=6;
+under_bearing_base_hight=disc_height*2;
 
 r0=45;
 r1=r0+pitch;
@@ -131,8 +177,10 @@ r4=r3+inner_thickness;
 r5=r4+spacing;
 r6=r5+outer_thickness;
 
+screw_r = r6*0.35 /* bearing base */ * 0.75;
 
-translate([80,100,0])
+
+translate([0,150,0])
 threaded_nut(pitch=pitch, inner_diameter=r1, outer_diameter=r2, height=h1);
 
 translate([160,0,0])
@@ -145,14 +193,23 @@ thread_height=h1,
 wall_height=h2,
 disc_height=disc_height,
 incision_depth=outer_incision,
-incision_diameter=incision_diameter);
+incision_diameter=incision_diameter,
+screw_r=screw_r);
 
+
+translate([160,180,0])
+under_bearing_base(
+smaller_radius=r6,
+larger_radius=r6+under_bearing_base_hight,
+height=under_bearing_base_hight,
+screw_r=screw_r);
 
 translate([0,0,disc_height])
 union() {
     inner_ring(inner_diameter=r3, outer_diameter=r4, height=h2, incision_count=6, incision_diameter=incision_diameter);
     translate([0,0,-disc_height/2]) cylinder(r=r6,h=disc_height,center=true);
 }
+
 
 
 
