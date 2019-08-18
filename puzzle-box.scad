@@ -11,7 +11,6 @@ module thread(pitch=3.0, radius=40.0, height=10.0, male=true) {
                 if (male) {
                     translate([0,0,-pitch]) threading(pitch=pitch, d=2*radius, windings = height/pitch + 2, angle = 45);
                     hollow_cylinder(outer_diameter=radius-pitch/2, inner_diameter=radius-pitch, height=height+pitch);
-
                 } else {
                     spacing=pitch/2;
                     Threading(pitch = pitch, d=2*radius+spacing, windings = height/pitch+2, angle = 45);
@@ -59,6 +58,23 @@ module threaded_nut(pitch=3.0, inner_diameter=100, outer_diameter=110, height=10
     }
 }
 
+module lock_base(
+pitch=3.0,
+inner_radius=20.0,
+inner_wall_radius=35.0,
+outer_radius=40.0,
+thread_height=12,
+wall_height=14,
+disc_height=3,
+incision_depth=8,
+incision_diameter=6) {
+    thread(pitch=pitch, radius=inner_radius, height=thread_height, male=true);
+    outer_ring(inner_diameter=inner_wall_radius, outer_diameter=outer_radius, height=wall_height, incision_count=6, incision_depth=incision_depth, incision_diameter=incision_diameter);
+    translate([0,0,-disc_height])
+    hollow_cylinder(outer_diameter=outer_radius, inner_diameter=inner_radius-pitch, height=disc_height);
+}
+
+
 h1=14;
 h2=15;
 disc_height=3;
@@ -82,12 +98,17 @@ translate([60,100,0])
 threaded_nut(pitch=pitch, inner_diameter=r1, outer_diameter=r2, height=h1);
 
 translate([120,0,disc_height])
-union() {
-    thread(pitch=pitch, radius=r1, height=h1, male=true);
-    outer_ring(inner_diameter=r5, outer_diameter=r6, height=h2, incision_count=6, incision_depth=outer_incision, incision_diameter=incision_diameter);
-    translate([0,0,-disc_height])
-    hollow_cylinder(outer_diameter=r6, inner_diameter=r1-pitch, height=disc_height);
-}
+lock_base(
+pitch=pitch,
+inner_radius=r1,
+inner_wall_radius=r5,
+outer_radius=r6,
+thread_height=h1,
+wall_height=h2,
+disc_height=disc_height,
+incision_depth=outer_incision,
+incision_diameter=incision_diameter);
+
 
 translate([0,0,disc_height])
 union() {
