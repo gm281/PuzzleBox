@@ -157,6 +157,23 @@ screw_r=40) {
     }
 }
 
+module cup(disc_height=4, screw_r=20) {
+    sc=6;
+    scale([sc,sc,sc]) rotate([90,0,0]) import("cup.stl");
+    difference() {
+        cylinder(d=73, h=disc_height);
+        bearing_base_screws(r=screw_r, screw_d=3, z_incision=0);
+    }
+}
+
+module rotating_lock_top(outer_r=40, lock_inner_r=30, lock_outer_r=35, height=10, disc_height=4, incision_diameter=6, screw_r=20) {
+    translate([0,0,disc_height]) inner_ring(inner_diameter=lock_inner_r, outer_diameter=lock_outer_r, height=height, incision_count=6, incision_diameter=incision_diameter);
+    difference() {
+        cylinder(r=outer_r,h=disc_height);
+        rotate([0, 180, 0]) bearing_base_screws(r=screw_r, screw_d=5, z_incision=-3);
+    }
+}
+
 h1=14;
 h2=15;
 disc_height=4;
@@ -204,12 +221,19 @@ larger_radius=r6+under_bearing_base_hight,
 height=under_bearing_base_hight,
 screw_r=screw_r);
 
-translate([0,0,disc_height])
-union() {
-    inner_ring(inner_diameter=r3, outer_diameter=r4, height=h2, incision_count=6, incision_diameter=incision_diameter);
-    translate([0,0,-disc_height/2]) cylinder(r=r6,h=disc_height,center=true);
-}
+translate([0,0,0])
+rotating_lock_top(
+outer_r=r6,
+lock_inner_r=r3,
+lock_outer_r=r4,
+height=h2,
+disc_height=disc_height,
+incision_diameter=incision_diameter,
+screw_r=screw_r);
 
+translate([300,0,0]) {
+    cup(disc_height=disc_height, screw_r=screw_r);
+}
 
 
 
