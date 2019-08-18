@@ -83,8 +83,11 @@ wall_height=14,
 disc_height=3,
 incision_depth=8,
 incision_diameter=6,
-stem_height=40)
+stem_height=40,
+above_bearing_clearence=6,
+bearing_thickness=15)
 {
+    translate([0,0,stem_height])
     lock_base(
 pitch=pitch,
 inner_radius=inner_radius,
@@ -96,21 +99,31 @@ disc_height=disc_height,
 incision_depth=incision_depth,
 incision_diameter=incision_diameter);
     
+    inner_cylinder_thickness = 3;
+    hollow_cylinder(outer_diameter=outer_radius, inner_diameter=inner_wall_radius, height=stem_height);
+
+    translate([0,0,bearing_thickness+above_bearing_clearence+disc_height])
+    hollow_cylinder(outer_diameter=inner_radius + inner_cylinder_thickness, inner_diameter=inner_radius, height=stem_height-bearing_thickness-above_bearing_clearence-disc_height);
+
+    translate([0,0,bearing_thickness+above_bearing_clearence])
+    cylinder(r=inner_radius + inner_cylinder_thickness, h=disc_height);
+    
+    bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness);
 }
 
 
 h1=14;
 h2=15;
-disc_height=3;
+disc_height=4;
 
 pitch=3.0;
-spacing=0.5;
+spacing=0.75;
 inner_thickness=4;
-outer_thickness=8;
+outer_thickness=10;
 outer_incision=outer_thickness-2;
 incision_diameter=6;
 
-r0=27;
+r0=45;
 r1=r0+pitch;
 r2=r1+outer_thickness-inner_thickness;
 r3=r2+spacing;
@@ -119,10 +132,10 @@ r5=r4+spacing;
 r6=r5+outer_thickness;
 
 
-translate([60,100,0])
+translate([80,100,0])
 threaded_nut(pitch=pitch, inner_diameter=r1, outer_diameter=r2, height=h1);
 
-translate([120,0,0])
+translate([160,0,0])
 rotating_lock_base(
 pitch=pitch,
 inner_radius=r0,
@@ -143,7 +156,6 @@ union() {
 
 
 
-translate([60,-80,0]) bearing();
 
 
 
