@@ -180,10 +180,10 @@ r6=r5+outer_thickness;
 screw_r = r6*0.35 /* bearing base */ * 0.75;
 
 
-translate([0,150,0])
+translate([-10,130,0])
 threaded_nut(pitch=pitch, inner_diameter=r1, outer_diameter=r2, height=h1);
 
-translate([160,0,0])
+translate([145,0,0])
 rotating_lock_base(
 pitch=pitch,
 inner_radius=r0,
@@ -197,7 +197,7 @@ incision_diameter=incision_diameter,
 screw_r=screw_r);
 
 
-translate([160,180,0])
+translate([130,150,0])
 under_bearing_base(
 smaller_radius=r6,
 larger_radius=r6+under_bearing_base_hight,
