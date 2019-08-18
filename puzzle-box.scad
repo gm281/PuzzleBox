@@ -106,7 +106,7 @@ incision_diameter=incision_diameter);
     hollow_cylinder(outer_diameter=inner_radius + inner_cylinder_thickness, inner_diameter=inner_radius, height=stem_height-bearing_thickness-above_bearing_clearence-disc_height);
 
     translate([0,0,bearing_thickness+above_bearing_clearence])
-    cylinder(r=inner_radius + inner_cylinder_thickness, h=disc_height);
+    cylinder(r=outer_radius, h=disc_height);
     
     bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness);
 }
