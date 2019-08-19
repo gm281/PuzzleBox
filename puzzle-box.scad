@@ -137,32 +137,64 @@ screw_r=40) {
         union() {
             translate([0,0,-0.05]) cylinder(r=hex_access_radius, h=bearing_base_height+height+0.1);
             bearing_base_screws(r=screw_r, screw_d=6, z_incision=2.4);
+            
+            rubber_pad_distance=larger_radius * 0.80;
+            rubber_pad_r=5;
+            rubber_pad_indent=1.5;
+            rubber_pad_count=6;
+            for (i = [0 : 360/rubber_pad_count : 360-1]) {
+                rotate([0,0,i]) translate([rubber_pad_distance,0,-0.05]) cylinder(r=rubber_pad_r, h=rubber_pad_indent);
+            }   
         }
     }
 }
 
+module cup_thread(pitch=3, radius=20, height=15, screw_count=3, screw_r=10) {
+    disc_height=3;
+    mirror([1,0,0])
+    thread(pitch=pitch, radius=radius, height=height, male=true);
+    translate([0,0,height-disc_height]) {
+        difference() {
+            cylinder(r=radius-pitch/2, h=disc_height);
+            z_incision=1;
+            for (i = [0 : 360/screw_count : 360-1]) {
+                translate([0,0, z_incision]) rotate([0,0,i]) rotate([0, 180, 0]) translate([screw_r,0,0]) screw_ind(screw_th=2, screw_l=0);
+            }
+        }
+    }
+}
 module cup(disc_height=4, screw_r=20) {
     sc=6;
+    th_h=10;
+    thread_d=30;
+    pitch=3;
+    hold_cnt=3;
+    cup_thread_screw_r=15;
+    
     scale([sc,sc,sc]) rotate([90,0,0]) import("cup.stl");
     difference() {
         cylinder(d=73, h=disc_height);
         bearing_base_screws(r=screw_r, screw_d=3, z_incision=0);
     }
-    th_h=10;
-    thread_d=30;
-    translate([0,0,165 - th_h])
-    // TODO remove the holds
-    mirror([1,0,0])
-    threaded_nut(pitch=3.0, inner_diameter=thread_d, outer_diameter=33, height=th_h);
     
-    translate([0,0,167 + 20]) {
-        sphere_slice(smaller_radius=10, larger_radius=38.5, height=6);
-        translate([0,0,-th_h+0.05])
-        mirror([1,0,0])
-        thread(pitch=3.0, radius=thread_d, height=th_h, male=true);
+    translate([0,0,165 - th_h])
+    mirror([1,0,0])
+    threaded_nut(pitch=pitch, inner_diameter=thread_d, outer_diameter=33, height=th_h);
+
+    translate([50,80,th_h])
+    rotate([0,180,0])
+    cup_thread(pitch=pitch, radius=thread_d, height=th_h, screw_count=hold_cnt, screw_r=cup_thread_screw_r);
+    
+    translate([100,0,0]) {
         difference() {
-            hold_h=3;
-            hold_cnt=3;
+            sphere_slice(smaller_radius=10, larger_radius=38.5, height=6);
+            for (i = [0 : 360/hold_cnt : 360-1]) {
+                rotate([0,0,180+i]) translate([cup_thread_screw_r,0,-0.05]) cylinder(r=1,h=10);
+            }
+        }
+
+        difference() {
+            hold_h=4;
             union() {
                 for (i = [0 : 360/hold_cnt : 360-1]) {
                     rotate([0,0,i])
@@ -242,7 +274,7 @@ disc_height=disc_height,
 incision_diameter=incision_diameter,
 screw_r=screw_r);
 
-translate([0,0,0]) {
+translate([-250,150,0]) {
     cup(disc_height=disc_height, screw_r=screw_r);
 }
 
