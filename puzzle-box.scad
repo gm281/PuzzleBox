@@ -187,24 +187,30 @@ module cup(disc_height=4, screw_r=20) {
     
     translate([100,0,0]) {
         difference() {
-            sphere_slice(smaller_radius=10, larger_radius=38.5, height=6);
-            for (i = [0 : 360/hold_cnt : 360-1]) {
-                rotate([0,0,180+i]) translate([cup_thread_screw_r,0,-0.05]) cylinder(r=1,h=10);
-            }
-        }
-
-        difference() {
-            hold_h=4;
             union() {
-                for (i = [0 : 360/hold_cnt : 360-1]) {
-                    rotate([0,0,i])
-                    translate([-20,hold_h/2,3])
-                    rotate([0,-6,0])
-                    rotate([90,0,0])
-                    eliptical_hold(r1=16, r2=10, h=hold_h);
+                sphere_slice(smaller_radius=10, larger_radius=38.5, height=6);
+
+                difference() {
+                    hold_h=4;
+                    union() {
+                        for (i = [0 : 360/hold_cnt : 360-1]) {
+                            rotate([0,0,i])
+                            translate([-20,hold_h/2,3])
+                            rotate([0,-6,0])
+                            rotate([90,0,0])
+                            eliptical_hold(r1=16, r2=10, h=hold_h);
+                        }
+                    }
+                    translate([-50,-50,-100+0.05]) cube([100,100,100]);
                 }
             }
-            translate([-50,-50,-100+0.05]) cube([100,100,100]);
+        
+            union() {
+                screw_hole_indent=10;
+                for (i = [0 : 360/hold_cnt : 360-1]) {
+                    rotate([0,0,180+i]) translate([cup_thread_screw_r,0,-0.05]) cylinder(r=0.75,h=screw_hole_indent);
+                }
+            }
         }
     }
 }
@@ -238,8 +244,6 @@ r5=r4+spacing;
 r6=r5+outer_thickness;
 
 screw_r = r6*0.35 /* bearing base */ * 0.75;
-
-
 
 translate([-10,130,0])
 threaded_nut_with_holds(pitch=pitch, inner_diameter=r1, outer_diameter=r2, height=h1);
