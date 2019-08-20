@@ -24,19 +24,29 @@ module thread(pitch=3.0, radius=40.0, height=10.0, male=true) {
 }
 
 
-module outer_ring(inner_diameter=100, outer_diameter=110, height=15, incision_count=6, incision_depth=6, incision_diameter=6) {
+module outer_ring(inner_diameter=100, outer_diameter=110, height=15, incision_count=6, incision_depth=6, incision_diameter=6, rotation_lock_r=3, spacing=0.5) {
     difference() {
         hollow_cylinder(outer_diameter=outer_diameter, inner_diameter=inner_diameter, height=height);
         for (i = [0 : 360/incision_count : 360-1]) {
             rotate([0,0,i]) translate([inner_diameter + incision_depth/2-1, 0, height/2]) rotate([0,90,0]) 
                 cylinder(r=incision_diameter/2,h=incision_depth+2,center=true);
         }
+        rotation_lock_count=incision_count/2;
+        for (i = [90/rotation_lock_count : 360/rotation_lock_count : 360-1]) {
+            rotate([0, 0, i]) translate([inner_diameter+spacing, 0, 0.05]) cylinder(r=rotation_lock_r, h=height+0.1);
+        }
     }
 }
 
-module inner_ring(inner_diameter=80, outer_diameter=90, height=15, incision_count=6, incision_diameter=6) {
+module inner_ring(inner_diameter=80, outer_diameter=90, height=15, incision_count=6, incision_diameter=6, rotation_lock_r=3) {
+    
     outer_ring(inner_diameter=inner_diameter, outer_diameter=outer_diameter, height=height, incision_count=incision_count, incision_depth=outer_diameter-inner_diameter+1, incision_diameter=
-    incision_diameter);
+    incision_diameter, rotation_lock_r=0);
+    
+    rotation_lock_count=incision_count/2;
+    for (i = [90/rotation_lock_count : 360/rotation_lock_count : 360-1]) {
+        rotate([0, 0, i]) translate([outer_diameter, 0, 0]) cylinder(r=rotation_lock_r, h=height);
+    }
 
 }
 
@@ -51,8 +61,8 @@ module threaded_nut_with_holds(pitch=3.0, inner_diameter=100, outer_diameter=110
     difference() {
         threaded_nut(pitch=pitch, inner_diameter=inner_diameter, outer_diameter=outer_diameter, height=height);
                 
-        indentation_d=30;
-        indentation_de=2;
+        indentation_d=20;
+        indentation_de=5;
         translate([-outer_diameter,0,indentation_d+height-indentation_de])rotate([0,90,0])cylinder(r=indentation_d,h=2*outer_diameter);  
     }
 }
@@ -66,9 +76,14 @@ thread_height=12,
 wall_height=14,
 disc_height=3,
 incision_depth=8,
-incision_diameter=6) {
+incision_diameter=6,
+incision_count=6,
+rotation_lock_r=3,
+spacing=0.5) {
     translate([0,0,disc_height]) thread(pitch=pitch, radius=inner_radius+pitch, height=thread_height, male=true);
-    translate([0,0,disc_height]) outer_ring(inner_diameter=inner_wall_radius, outer_diameter=outer_radius, height=wall_height, incision_count=6, incision_depth=incision_depth, incision_diameter=incision_diameter);
+    
+    translate([0,0,disc_height]) outer_ring(inner_diameter=inner_wall_radius, outer_diameter=outer_radius, height=wall_height, incision_count=incision_count, incision_depth=incision_depth, incision_diameter=incision_diameter, rotation_lock_r=rotation_lock_r, spacing=spacing);
+    
     hollow_cylinder(outer_diameter=outer_radius, inner_diameter=inner_radius, height=disc_height);
 }
 
@@ -82,10 +97,13 @@ wall_height=14,
 disc_height=3,
 incision_depth=8,
 incision_diameter=6,
+incision_count=6,
 stem_height=40,
 above_bearing_clearence=6,
 bearing_thickness=15,
-screw_r=40)
+screw_r=40,
+rotation_lock_r=3,
+spacing=0.5)
 {
     translate([0,0,stem_height])
     lock_base(
@@ -97,8 +115,12 @@ thread_height=thread_height,
 wall_height=wall_height,
 disc_height=disc_height,
 incision_depth=incision_depth,
-incision_diameter=incision_diameter);
-    
+incision_diameter=incision_diameter,
+incision_count=incision_count,
+rotation_lock_r=rotation_lock_r,
+spacing=spacing);
+    // TODO: Need to reduce the width of the screw holes! Here, but also in the cup etc.
+/*    
     inner_cylinder_thickness = 3;
     hollow_cylinder(outer_diameter=outer_radius, inner_diameter=inner_wall_radius, height=stem_height);
 
@@ -112,6 +134,7 @@ incision_diameter=incision_diameter);
         bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness);
         bearing_base_screws(r=screw_r, screw_d=5, z_incision=0);
     }
+    */
 }
 
 module bearing_base_screws(r=30, screw_d=6, z_incision=2.4) {
@@ -215,8 +238,10 @@ module cup(disc_height=4, screw_r=20) {
     }
 }
 
-module rotating_lock_top(outer_r=40, lock_inner_r=30, lock_outer_r=35, height=10, disc_height=4, incision_diameter=6, screw_r=20) {
-    translate([0,0,disc_height]) inner_ring(inner_diameter=lock_inner_r, outer_diameter=lock_outer_r, height=height, incision_count=6, incision_diameter=incision_diameter);
+module rotating_lock_top(outer_r=40, lock_inner_r=30, lock_outer_r=35, height=10, disc_height=4, incision_diameter=6, incision_count=8, screw_r=20, rotation_lock_r=3) {
+    
+    translate([0,0,disc_height]) inner_ring(inner_diameter=lock_inner_r, outer_diameter=lock_outer_r, height=height, incision_count=incision_count, incision_diameter=incision_diameter, rotation_lock_r=rotation_lock_r);
+    
     difference() {
         cylinder(r=outer_r,h=disc_height);
         rotate([0, 180, 0]) bearing_base_screws(r=screw_r, screw_d=5, z_incision=-3);
@@ -228,14 +253,17 @@ h2=15;
 disc_height=4;
 
 pitch=3.0;
-spacing=0.75;
+spacing=0.5;
 inner_thickness=4;
 outer_thickness=10;
 outer_incision=outer_thickness-2;
-incision_diameter=6;
+incision_diameter=4.8;
+incision_count=8;
 under_bearing_base_hight=disc_height*2;
+stem_height=40;
+rotation_lock_r=2;
 
-r0=45;
+r0=20;
 r1=r0+pitch;
 r2=r1+outer_thickness-inner_thickness;
 r3=r2+spacing;
@@ -245,10 +273,16 @@ r6=r5+outer_thickness;
 
 screw_r = r6*0.35 /* bearing base */ * 0.75;
 
-translate([-10,130,0])
-threaded_nut_with_holds(pitch=pitch, inner_diameter=r1, outer_diameter=r2, height=h1);
+//translate([-10,130,0])
+translate([0,90,0])
+threaded_nut_with_holds(
+pitch=pitch,
+inner_diameter=r1,
+outer_diameter=r2,
+height=h1);
 
-translate([145,0,0])
+//translate([145,0,0])
+translate([105,0,-stem_height])
 rotating_lock_base(
 pitch=pitch,
 inner_radius=r0,
@@ -259,16 +293,23 @@ wall_height=h2,
 disc_height=disc_height,
 incision_depth=outer_incision,
 incision_diameter=incision_diameter,
-screw_r=screw_r);
+incision_count=incision_count,
+screw_r=screw_r,
+stem_height=stem_height,
+rotation_lock_r=rotation_lock_r,
+spacing=spacing/2);
 
+/*
 translate([130,150,0])
 under_bearing_base(
 smaller_radius=r6,
 larger_radius=r6+under_bearing_base_hight,
 height=under_bearing_base_hight,
 screw_r=screw_r);
+*/
 
-translate([-150,0,0])
+//translate([-150,0,0])
+translate([0,0,0])
 rotating_lock_top(
 outer_r=r6,
 lock_inner_r=r3,
@@ -276,11 +317,15 @@ lock_outer_r=r4,
 height=h2,
 disc_height=disc_height,
 incision_diameter=incision_diameter,
-screw_r=screw_r);
+incision_count=incision_count,
+screw_r=screw_r,
+rotation_lock_r=rotation_lock_r);
 
+/*
 translate([-250,150,0]) {
     cup(disc_height=disc_height, screw_r=screw_r);
 }
+*/
 
 
 
