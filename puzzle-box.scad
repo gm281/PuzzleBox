@@ -43,9 +43,10 @@ module inner_ring(inner_diameter=80, outer_diameter=90, height=15, incision_coun
     outer_ring(inner_diameter=inner_diameter, outer_diameter=outer_diameter, height=height, incision_count=incision_count, incision_depth=outer_diameter-inner_diameter+1, incision_diameter=
     incision_diameter, rotation_lock_r=0);
     
+    // TODO: if this works, the 0.25 should become "spacing/2"
     rotation_lock_count=incision_count/2;
     for (i = [90/rotation_lock_count : 360/rotation_lock_count : 360-1]) {
-        rotate([0, 0, i]) translate([outer_diameter, 0, 0]) cylinder(r=rotation_lock_r, h=height);
+        rotate([0, 0, i]) translate([outer_diameter, 0, height-rotation_lock_r]) sphere(r=rotation_lock_r-0.25);
     }
 
 }
@@ -105,6 +106,7 @@ screw_r=40,
 rotation_lock_r=3,
 spacing=0.5)
 {
+
     translate([0,0,stem_height])
     lock_base(
 pitch=pitch,
@@ -120,7 +122,6 @@ incision_count=incision_count,
 rotation_lock_r=rotation_lock_r,
 spacing=spacing);
     // TODO: Need to reduce the width of the screw holes! Here, but also in the cup etc.
-/*    
     inner_cylinder_thickness = 3;
     hollow_cylinder(outer_diameter=outer_radius, inner_diameter=inner_wall_radius, height=stem_height);
 
@@ -131,8 +132,23 @@ spacing=spacing);
     cylinder(r=outer_radius, h=disc_height);
     
     difference() {
-        bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness);
-        bearing_base_screws(r=screw_r, screw_d=5, z_incision=0);
+        bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness, hex_width=8.3, tolerance=0.52);
+        bearing_base_screws(r=screw_r, screw_d=3, z_incision=0);
+    }
+/*    
+    difference() {
+         bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness, hex_width=8.3, tolerance=0.52);
+        bearing_base_screws(r=screw_r, screw_d=3, z_incision=0);
+    }
+                        
+    hold_h=8;
+    hold_cnt=2;
+    for (i = [0 : 360/hold_cnt : 360-1]) {
+        rotate([0,0,i])
+        translate([25+62-20,hold_h/2,7])
+        rotate([0,0,0])
+        rotate([90,0,0])
+        eliptical_hold(r1=10, r2=16, h=hold_h);
     }
     */
 }
@@ -253,17 +269,18 @@ h2=15;
 disc_height=4;
 
 pitch=3.0;
-spacing=0.5;
+spacing=0.6;
 inner_thickness=4;
 outer_thickness=10;
 outer_incision=outer_thickness-2;
 incision_diameter=4.8;
-incision_count=8;
+incision_count=16;
 under_bearing_base_hight=disc_height*2;
 stem_height=40;
 rotation_lock_r=2;
 
-r0=20;
+//r0=20;
+r0=45;
 r1=r0+pitch;
 r2=r1+outer_thickness-inner_thickness;
 r3=r2+spacing;
@@ -273,16 +290,17 @@ r6=r5+outer_thickness;
 
 screw_r = r6*0.35 /* bearing base */ * 0.75;
 
-//translate([-10,130,0])
-translate([0,90,0])
-threaded_nut_with_holds(
-pitch=pitch,
-inner_diameter=r1,
-outer_diameter=r2,
-height=h1);
 
-//translate([145,0,0])
-translate([105,0,-stem_height])
+translate([150,300,0])
+under_bearing_base(
+smaller_radius=r6,
+larger_radius=r6+under_bearing_base_hight,
+height=under_bearing_base_hight,
+screw_r=screw_r);
+
+
+translate([145,0,0])
+//translate([85,0,-stem_height])
 rotating_lock_base(
 pitch=pitch,
 inner_radius=r0,
@@ -299,17 +317,16 @@ stem_height=stem_height,
 rotation_lock_r=rotation_lock_r,
 spacing=spacing/2);
 
-/*
-translate([130,150,0])
-under_bearing_base(
-smaller_radius=r6,
-larger_radius=r6+under_bearing_base_hight,
-height=under_bearing_base_hight,
-screw_r=screw_r);
-*/
+translate([200,150,0])
+//translate([0,90,0])
+threaded_nut_with_holds(
+pitch=pitch,
+inner_diameter=r1,
+outer_diameter=r2,
+height=h1);
 
-//translate([-150,0,0])
-translate([0,0,0])
+translate([-60,0,0])
+//translate([0,0,0])
 rotating_lock_top(
 outer_r=r6,
 lock_inner_r=r3,
@@ -321,11 +338,10 @@ incision_count=incision_count,
 screw_r=screw_r,
 rotation_lock_r=rotation_lock_r);
 
-/*
-translate([-250,150,0]) {
-    cup(disc_height=disc_height, screw_r=screw_r);
-}
-*/
+
+translate([-50,150,0])
+cup(disc_height=disc_height, screw_r=screw_r);
+
 
 
 
