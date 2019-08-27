@@ -1,7 +1,8 @@
 // TODOs
-// *  reduce the width of the screw holes! Here, but also in the cup etc.
+// * reduce the width of the screw holes! Here, but also in the cup etc.
 // * holder for the hex key
 // * holders for the rotation
+// * hex hole in the overall base
 
 
 include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/bolts_nuts_threaded_rods_-_OpenSCAD_library_Threading/files/Threading.scad>
@@ -45,15 +46,14 @@ module outer_ring(inner_diameter=100, outer_diameter=110, height=15, incision_co
     }
 }
 
-module inner_ring(inner_diameter=80, outer_diameter=90, height=15, incision_count=6, incision_diameter=6, rotation_lock_r=3) {
+module inner_ring(inner_diameter=80, outer_diameter=90, height=15, incision_count=6, incision_diameter=6, rotation_lock_r=3, spacing=1.5) {
     
     outer_ring(inner_diameter=inner_diameter, outer_diameter=outer_diameter, height=height, incision_count=incision_count, incision_depth=outer_diameter-inner_diameter+1, incision_diameter=
     incision_diameter, rotation_lock_r=0);
     
-    // TODO: if this works, the 0.25 should become "spacing/2"
     rotation_lock_count=incision_count/2;
     lineup_on_circle(count=rotation_lock_count, fractional_offset=0.25, translate_x=outer_diameter, translate_z=height-rotation_lock_r){
-        sphere(r=rotation_lock_r-0.25);
+        sphere(r=rotation_lock_r-spacing/2);
     }
 
 }
@@ -260,9 +260,9 @@ module cup(disc_height=4, screw_r=20) {
     }
 }
 
-module rotating_lock_top(outer_r=40, lock_inner_r=30, lock_outer_r=35, height=10, disc_height=4, incision_diameter=6, incision_count=8, screw_r=20, rotation_lock_r=3) {
+module rotating_lock_top(outer_r=40, lock_inner_r=30, lock_outer_r=35, height=10, disc_height=4, incision_diameter=6, incision_count=8, screw_r=20, rotation_lock_r=3, spacing=1.5) {
     
-    translate([0,0,disc_height]) inner_ring(inner_diameter=lock_inner_r, outer_diameter=lock_outer_r, height=height, incision_count=incision_count, incision_diameter=incision_diameter, rotation_lock_r=rotation_lock_r);
+    translate([0,0,disc_height]) inner_ring(inner_diameter=lock_inner_r, outer_diameter=lock_outer_r, height=height, incision_count=incision_count, incision_diameter=incision_diameter, rotation_lock_r=rotation_lock_r, spacing=spacing);
     
     difference() {
         cylinder(r=outer_r,h=disc_height);
@@ -296,7 +296,7 @@ r6=r5+outer_thickness;
 
 screw_r = r6*0.35 /* bearing base */ * 0.75;
 
-
+/*
 translate([150,300,0])
 under_bearing_base(
 smaller_radius=r6,
@@ -330,6 +330,7 @@ pitch=pitch,
 inner_diameter=r1,
 outer_diameter=r2,
 height=h1);
+*/
 
 translate([-60,0,0])
 //translate([0,0,0])
@@ -342,11 +343,13 @@ disc_height=disc_height,
 incision_diameter=incision_diameter,
 incision_count=incision_count,
 screw_r=screw_r,
-rotation_lock_r=rotation_lock_r);
+rotation_lock_r=rotation_lock_r,
+spacing=spacing);
 
-
+/*
 translate([-50,150,0])
 cup(disc_height=disc_height, screw_r=screw_r);
+*/
 
 
 
