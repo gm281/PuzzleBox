@@ -1,3 +1,9 @@
+// TODOs
+// *  reduce the width of the screw holes! Here, but also in the cup etc.
+// * holder for the hex key
+// * holders for the rotation
+
+
 include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/bolts_nuts_threaded_rods_-_OpenSCAD_library_Threading/files/Threading.scad>
 include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/Gear_Bearing/bearing.scad>
 include <shapes-library.scad>
@@ -122,7 +128,6 @@ incision_diameter=incision_diameter,
 incision_count=incision_count,
 rotation_lock_r=rotation_lock_r,
 spacing=spacing);
-    // TODO: Need to reduce the width of the screw holes! Here, but also in the cup etc.
     inner_cylinder_thickness = 3;
     hollow_cylinder(outer_diameter=outer_radius, inner_diameter=inner_wall_radius, height=stem_height);
 
