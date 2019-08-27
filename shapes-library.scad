@@ -51,3 +51,13 @@ module eliptical_hold(r1=40, r2=20, h=8) {
     }
 }
 
+module lineup_on_circle(
+count=6, 
+fractional_offset=0,
+translate_x=0,
+translate_z=0) {
+    for (i = [fractional_offset * 360/count : 360/count : 360-1]) {
+        rotate([0, 0, i]) translate([translate_x, 0, translate_z]) children(0);
+    }  
+}
+

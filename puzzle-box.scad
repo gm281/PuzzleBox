@@ -27,13 +27,14 @@ module thread(pitch=3.0, radius=40.0, height=10.0, male=true) {
 module outer_ring(inner_diameter=100, outer_diameter=110, height=15, incision_count=6, incision_depth=6, incision_diameter=6, rotation_lock_r=3, spacing=0.5) {
     difference() {
         hollow_cylinder(outer_diameter=outer_diameter, inner_diameter=inner_diameter, height=height);
-        for (i = [0 : 360/incision_count : 360-1]) {
-            rotate([0,0,i]) translate([inner_diameter + incision_depth/2-1, 0, height/2]) rotate([0,90,0]) 
-                cylinder(r=incision_diameter/2,h=incision_depth+2,center=true);
+           
+        lineup_on_circle(count=incision_count, translate_x=inner_diameter + incision_depth/2-1, translate_z=height/2){
+        rotate([0,90,0]) 
+            cylinder(r=incision_diameter/2,h=incision_depth+2,center=true);
         }
         rotation_lock_count=incision_count/2;
-        for (i = [90/rotation_lock_count : 360/rotation_lock_count : 360-1]) {
-            rotate([0, 0, i]) translate([inner_diameter+spacing, 0, 0.05]) cylinder(r=rotation_lock_r, h=height+0.1);
+        lineup_on_circle(count=rotation_lock_count, fractional_offset=0.25, translate_x=inner_diameter+spacing, translate_z=0.05){
+            cylinder(r=rotation_lock_r, h=height+0.1);
         }
     }
 }
@@ -45,8 +46,8 @@ module inner_ring(inner_diameter=80, outer_diameter=90, height=15, incision_coun
     
     // TODO: if this works, the 0.25 should become "spacing/2"
     rotation_lock_count=incision_count/2;
-    for (i = [90/rotation_lock_count : 360/rotation_lock_count : 360-1]) {
-        rotate([0, 0, i]) translate([outer_diameter, 0, height-rotation_lock_r]) sphere(r=rotation_lock_r-0.25);
+    lineup_on_circle(count=rotation_lock_count, fractional_offset=0.25, translate_x=outer_diameter, translate_z=height-rotation_lock_r){
+        sphere(r=rotation_lock_r-0.25);
     }
 
 }
@@ -155,8 +156,8 @@ spacing=spacing);
 
 module bearing_base_screws(r=30, screw_d=6, z_incision=2.4) {
     screw_count=6;
-    for (i = [0 : 360/screw_count : 360-1]) {
-        translate([0,0, z_incision]) rotate([0,0,i]) rotate([0, 180, 0]) translate([r,0,0]) screw_ind(screw_th=screw_d, screw_l=0);
+    lineup_on_circle(count=screw_count, translate_x=r, translate_z=z_incision){
+        rotate([0, 180, 0]) screw_ind(screw_th=screw_d, screw_l=0);
     }
 }
 
@@ -181,9 +182,9 @@ screw_r=40) {
             rubber_pad_r=5;
             rubber_pad_indent=1.5;
             rubber_pad_count=6;
-            for (i = [0 : 360/rubber_pad_count : 360-1]) {
-                rotate([0,0,i]) translate([rubber_pad_distance,0,-0.05]) cylinder(r=rubber_pad_r, h=rubber_pad_indent);
-            }   
+            lineup_on_circle(count=rubber_pad_count, translate_x=rubber_pad_distance, translate_z=-0.05){
+                cylinder(r=rubber_pad_r, h=rubber_pad_indent);
+            }
         }
     }
 }
@@ -196,8 +197,9 @@ module cup_thread(pitch=3, radius=20, height=15, screw_count=3, screw_r=10) {
         difference() {
             cylinder(r=radius-pitch/2, h=disc_height);
             z_incision=1;
-            for (i = [0 : 360/screw_count : 360-1]) {
-                translate([0,0, z_incision]) rotate([0,0,i]) rotate([0, 180, 0]) translate([screw_r,0,0]) screw_ind(screw_th=2, screw_l=0);
+            
+            lineup_on_circle(count=screw_count, translate_x=screw_r, translate_z=z_incision){
+                rotate([0, 180, 0]) screw_ind(screw_th=2, screw_l=0);
             }
         }
     }
@@ -232,9 +234,8 @@ module cup(disc_height=4, screw_r=20) {
                 difference() {
                     hold_h=4;
                     union() {
-                        for (i = [0 : 360/hold_cnt : 360-1]) {
-                            rotate([0,0,i])
-                            translate([-20,hold_h/2,3])
+                        lineup_on_circle(count=hold_cnt, translate_x=-20, translate_z=3) {
+                            translate([0,hold_h/2,0])
                             rotate([0,-6,0])
                             rotate([90,0,0])
                             eliptical_hold(r1=16, r2=10, h=hold_h);
@@ -246,8 +247,8 @@ module cup(disc_height=4, screw_r=20) {
         
             union() {
                 screw_hole_indent=10;
-                for (i = [0 : 360/hold_cnt : 360-1]) {
-                    rotate([0,0,180+i]) translate([cup_thread_screw_r,0,-0.05]) cylinder(r=0.75,h=screw_hole_indent);
+                lineup_on_circle(count=hold_cnt, fractional_offset=0.5, translate_x=cup_thread_screw_r, translate_z=-0.05) {
+                    cylinder(r=0.75,h=screw_hole_indent);
                 }
             }
         }
