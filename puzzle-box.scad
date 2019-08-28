@@ -1,8 +1,9 @@
 // TODOs
-// * reduce the width of the screw holes! Here, but also in the cup etc.
 // * holder for the hex key
 // * holders for the rotation
 // * hex hole in the overall base
+// * set the diameter of the base pads to match the silicon pads
+// * screw cylinders in the cup base
 
 
 include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/bolts_nuts_threaded_rods_-_OpenSCAD_library_Threading/files/Threading.scad>
@@ -181,7 +182,7 @@ screw_r=40) {
         }
         union() {
             translate([0,0,-0.05]) cylinder(r=hex_access_radius, h=bearing_base_height+height+0.1);
-            bearing_base_screws(r=screw_r, screw_d=6, z_incision=2.4);
+            bearing_base_screws(r=screw_r, screw_d=4, z_incision=1.4);
             
             rubber_pad_distance=larger_radius * 0.80;
             rubber_pad_r=5;
@@ -204,7 +205,7 @@ module cup_thread(pitch=3, radius=20, height=15, screw_count=3, screw_r=10) {
             z_incision=1;
             
             lineup_on_circle(count=screw_count, translate_x=screw_r, translate_z=z_incision){
-                rotate([0, 180, 0]) screw_ind(screw_th=2, screw_l=0);
+                rotate([0, 180, 0]) screw_ind(screw_th=2.5, screw_l=0);
             }
         }
     }
@@ -253,7 +254,7 @@ module cup(disc_height=4, screw_r=20) {
             union() {
                 screw_hole_indent=10;
                 lineup_on_circle(count=hold_cnt, fractional_offset=0.5, translate_x=cup_thread_screw_r, translate_z=-0.05) {
-                    cylinder(r=0.75,h=screw_hole_indent);
+                    cylinder(r=1,h=screw_hole_indent);
                 }
             }
         }
@@ -266,7 +267,7 @@ module rotating_lock_top(outer_r=40, lock_inner_r=30, lock_outer_r=35, height=10
     
     difference() {
         cylinder(r=outer_r,h=disc_height);
-        rotate([0, 180, 0]) bearing_base_screws(r=screw_r, screw_d=5, z_incision=-3);
+        rotate([0, 180, 0]) bearing_base_screws(r=screw_r, screw_d=4, z_incision=-3);
     }
 }
 
@@ -296,14 +297,13 @@ r6=r5+outer_thickness;
 
 screw_r = r6*0.35 /* bearing base */ * 0.75;
 
-/*
+
 translate([150,300,0])
 under_bearing_base(
 smaller_radius=r6,
 larger_radius=r6+under_bearing_base_hight,
 height=under_bearing_base_hight,
 screw_r=screw_r);
-
 
 translate([145,0,0])
 //translate([85,0,-stem_height])
@@ -323,6 +323,8 @@ stem_height=stem_height,
 rotation_lock_r=rotation_lock_r,
 spacing=spacing/2);
 
+
+
 translate([200,150,0])
 //translate([0,90,0])
 threaded_nut_with_holds(
@@ -330,7 +332,7 @@ pitch=pitch,
 inner_diameter=r1,
 outer_diameter=r2,
 height=h1);
-*/
+
 
 translate([-60,0,0])
 //translate([0,0,0])
@@ -346,10 +348,9 @@ screw_r=screw_r,
 rotation_lock_r=rotation_lock_r,
 spacing=spacing);
 
-/*
+
 translate([-50,150,0])
 cup(disc_height=disc_height, screw_r=screw_r);
-*/
 
 
 
