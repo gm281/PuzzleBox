@@ -1,13 +1,12 @@
 // TODOs
-// * holder for the hex key
 // * holders for the rotation
 // * hex hole in the overall base
 // * set the diameter of the base pads to match the silicon pads
-// * screw cylinders in the cup base
 
 
 include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/bolts_nuts_threaded_rods_-_OpenSCAD_library_Threading/files/Threading.scad>
 include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/Gear_Bearing/bearing.scad>
+include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/Parametric_Snap_Pins/pin2.scad>
 include <shapes-library.scad>
 
 showexample = 0;
@@ -96,7 +95,7 @@ spacing=0.5) {
     hollow_cylinder(outer_diameter=outer_radius, inner_diameter=inner_radius, height=disc_height);
 }
 
-module rotating_lock_base(
+module _rotating_lock_base(
 pitch=3.0,
 inner_radius=20.0,
 inner_wall_radius=35.0,
@@ -112,9 +111,9 @@ above_bearing_clearence=6,
 bearing_thickness=15,
 screw_r=40,
 rotation_lock_r=3,
-spacing=0.5)
+spacing=0.5,
+hex_width=8.3)
 {
-
     translate([0,0,stem_height])
     lock_base(
 pitch=pitch,
@@ -139,12 +138,12 @@ spacing=spacing);
     cylinder(r=outer_radius, h=disc_height);
     
     difference() {
-        bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness, hex_width=8.3, tolerance=0.52);
+        bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness, hex_width=hex_width, tolerance=0.52);
         bearing_base_screws(r=screw_r, screw_d=3, z_incision=0);
     }
 /*    
     difference() {
-         bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness, hex_width=8.3, tolerance=0.52);
+         bearing(diameter=2*inner_wall_radius, thickness=bearing_thickness, hex_width=hex_width, tolerance=0.52);
         bearing_base_screws(r=screw_r, screw_d=3, z_incision=0);
     }
                         
@@ -159,6 +158,69 @@ spacing=spacing);
     }
     */
 }
+
+module rotating_lock_base(
+pitch=3.0,
+inner_radius=20.0,
+inner_wall_radius=35.0,
+outer_radius=40.0,
+thread_height=12,
+wall_height=14,
+disc_height=3,
+incision_depth=8,
+incision_diameter=6,
+incision_count=6,
+stem_height=40,
+above_bearing_clearence=6,
+bearing_thickness=15,
+screw_r=40,
+rotation_lock_r=3,
+spacing=0.5,
+hex_width=8.3,
+holder_hole_r=2,
+holder_hole_l=7,
+holder_hole_nub=0.3,
+holder_hole_spacing=15)
+{
+    difference() {
+        _rotating_lock_base(
+pitch=pitch,
+inner_radius=inner_radius,
+inner_wall_radius=inner_wall_radius,
+outer_radius=outer_radius,
+thread_height=thread_height,
+wall_height=wall_height,
+disc_height=disc_height,
+incision_depth=incision_depth,
+incision_diameter=incision_diameter,
+incision_count=incision_count,
+stem_height=stem_height,
+above_bearing_clearence=above_bearing_clearence,
+bearing_thickness=bearing_thickness,
+screw_r=screw_r,
+rotation_lock_r=rotation_lock_r,
+spacing=spacing,
+hex_width=hex_width);
+        lineup_on_circle(count=2, translate_x=outer_radius, translate_z=stem_height) {
+            union() {
+                rotate([0,-90,0]) pinhole(r=holder_hole_r,l=holder_hole_l,nub=holder_hole_nub,fixed=0,fins=1);
+                translate([0,0,-holder_hole_spacing]) rotate([0,-90,0]) pinhole(r=holder_hole_r,l=holder_hole_l,nub=holder_hole_nub,fixed=0,fins=1);
+            }
+        }
+    }
+}
+
+module rotating_lock_base_holder() {
+    hold_h=6;
+    screw_l=28;
+    translate([0,hold_h/2,0]) rotate([90,0,0]) eliptical_hold(r1=16, r2=14, h=hold_h);
+    translate([-screw_l/2,0,3])
+    intersection() {
+        screw_ind(screw_th=0.1, screw_l=screw_l);
+        translate([-screw_l*5, -screw_l*5, 0]) cube(screw_l*10, screw_l*10, screw_l*10);
+    }
+}
+//rotating_lock_base_holder();
 
 module bearing_base_screws(r=30, screw_d=6, z_incision=2.4) {
     screw_count=6;
@@ -210,7 +272,7 @@ module cup_thread(pitch=3, radius=20, height=15, screw_count=3, screw_r=10) {
         }
     }
 }
-module cup(disc_height=4, screw_r=20) {
+module cup(disc_height=4, screw_r=20, hex_width=8.3) {
     sc=6;
     th_h=10;
     thread_d=30;
@@ -218,20 +280,41 @@ module cup(disc_height=4, screw_r=20) {
     hold_cnt=3;
     cup_thread_screw_r=15;
     
-    scale([sc,sc,sc]) rotate([90,0,0]) import("cup.stl");
+    /* Cup */
     difference() {
-        cylinder(d=73, h=disc_height);
-        bearing_base_screws(r=screw_r, screw_d=3, z_incision=0);
+        union() {
+            scale([sc,sc,sc]) rotate([90,0,0]) import("cup.stl");
+            translate([0,0,0]) cylinder(d=73, h=4.05);
+            translate([0,0,4]) cylinder(d=67, h=4.05);
+            translate([0,0,8]) cylinder(d=57, h=2.05);
+            translate([0,0,10]) cylinder(d=48, h=2.05);
+            translate([0,0,12]) cylinder(d=39, h=2.05);
+            translate([0,0,14]) cylinder(d=33, h=2.05);
+            translate([0,0,16]) cylinder(d=30, h=2.05);
+            translate([0,0,18]) cylinder(d=28, h=2.05);
+        }
+        union() {
+            /* Hex key holder */
+            translate([0,4.2 /* center of mass offset */, 27 /* level of the bed */ - 10 /* incision */]) cylinder(r=hex_width/sqrt(3),h=15,$fn=6);
+            /* Screw holes */
+            intersection() {
+                bearing_base_screws(r=screw_r, screw_d=3, z_incision=-2);
+                translate([0,0,-12]) cube(50,50,50, center=true);
+            }
+        }
     }
-    
+
+    /* Thread in the cup */
     translate([0,0,165 - th_h])
     mirror([1,0,0])
     threaded_nut(pitch=pitch, inner_diameter=thread_d, outer_diameter=33, height=th_h);
 
+    /* Lid with thread */
     translate([50,80,th_h])
     rotate([0,180,0])
     cup_thread(pitch=pitch, radius=thread_d, height=th_h, screw_count=hold_cnt, screw_r=cup_thread_screw_r);
     
+    /* Lid top with holds */
     translate([100,0,0]) {
         difference() {
             union() {
@@ -285,6 +368,11 @@ incision_count=16;
 under_bearing_base_hight=disc_height*2;
 stem_height=40;
 rotation_lock_r=2;
+hex_width=8.3;
+holder_r=2;
+holder_l=7;
+holder_nub=0.3;
+holder_spacing=h2;
 
 //r0=20;
 r0=45;
@@ -297,14 +385,16 @@ r6=r5+outer_thickness;
 
 screw_r = r6*0.35 /* bearing base */ * 0.75;
 
-
+/*
 translate([150,300,0])
 under_bearing_base(
 smaller_radius=r6,
 larger_radius=r6+under_bearing_base_hight,
 height=under_bearing_base_hight,
 screw_r=screw_r);
+*/
 
+/*
 translate([145,0,0])
 //translate([85,0,-stem_height])
 rotating_lock_base(
@@ -321,10 +411,16 @@ incision_count=incision_count,
 screw_r=screw_r,
 stem_height=stem_height,
 rotation_lock_r=rotation_lock_r,
-spacing=spacing/2);
+spacing=spacing/2,
+hex_width=hex_width,
+holder_hole_r=holder_r,
+holder_hole_l=holder_l,
+holder_hole_nub=holder_nub,
+holder_hole_spacing=holder_spacing);
+*/
 
 
-
+/*
 translate([200,150,0])
 //translate([0,90,0])
 threaded_nut_with_holds(
@@ -332,7 +428,9 @@ pitch=pitch,
 inner_diameter=r1,
 outer_diameter=r2,
 height=h1);
+*/
 
+/*
 
 translate([-60,0,0])
 //translate([0,0,0])
@@ -347,10 +445,12 @@ incision_count=incision_count,
 screw_r=screw_r,
 rotation_lock_r=rotation_lock_r,
 spacing=spacing);
+*/
+
 
 
 translate([-50,150,0])
-cup(disc_height=disc_height, screw_r=screw_r);
+cup(disc_height=disc_height, screw_r=screw_r, hex_width=hex_width);
 
 
 
