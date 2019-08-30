@@ -2,6 +2,7 @@
 // * holders for the rotation
 // * hex hole in the overall base
 // * set the diameter of the base pads to match the silicon pads
+// * fix warnings
 
 
 include </Users/gmilos/Library/CloudStorage/iCloudDrive/Jasiu/bolts_nuts_threaded_rods_-_OpenSCAD_library_Threading/files/Threading.scad>
@@ -159,6 +160,19 @@ spacing=spacing);
     */
 }
 
+module good_pinhole(length=14) {
+    sc = length / 14;
+    scale([sc,sc,sc])
+    pinhole(r=3.5,l=14,nub=0.5,fixed=1,fins=1);
+}
+
+module good_pinpeg(length=14) {
+    sc = length / 14;
+    preload=0.1;
+    scale([sc,sc,sc])   
+    pinpeg(r=3.5,l=14,d=2.5-preload,nub=0.5,t=1.8,space=0.25);
+}
+
 module rotating_lock_base(
 pitch=3.0,
 inner_radius=20.0,
@@ -177,12 +191,15 @@ screw_r=40,
 rotation_lock_r=3,
 spacing=0.5,
 hex_width=8.3,
-holder_hole_r=2,
 holder_hole_l=7,
-holder_hole_nub=0.3,
 holder_hole_spacing=15)
 {
+    // for printing only
+    intersection() {
+    union() {
+        
     difference() {
+        union() {
         _rotating_lock_base(
 pitch=pitch,
 inner_radius=inner_radius,
@@ -201,26 +218,77 @@ screw_r=screw_r,
 rotation_lock_r=rotation_lock_r,
 spacing=spacing,
 hex_width=hex_width);
+            // Cylinders to support the pinholes
+            lineup_on_circle(count=2, translate_x=outer_radius, translate_z=stem_height) {
+                union() {
+                    surface_indent=3;
+                    cyl_h = outer_radius - inner_radius - surface_indent;
+                    translate([-surface_indent,0,0]) rotate([0,-90,0]) cylinder(r=holder_hole_l*0.25, h=cyl_h);
+                    translate([-surface_indent,0,-holder_hole_spacing]) rotate([0,-90,0]) cylinder(r=holder_hole_l*0.25, h=cyl_h);
+                }
+            }
+        }
         lineup_on_circle(count=2, translate_x=outer_radius, translate_z=stem_height) {
             union() {
-                rotate([0,-90,0]) pinhole(r=holder_hole_r,l=holder_hole_l,nub=holder_hole_nub,fixed=0,fins=1);
-                translate([0,0,-holder_hole_spacing]) rotate([0,-90,0]) pinhole(r=holder_hole_r,l=holder_hole_l,nub=holder_hole_nub,fixed=0,fins=1);
+                rotate([0,-90,0]) good_pinhole(length=holder_hole_l);
+                translate([0,0,-holder_hole_spacing]) rotate([0,-90,0]) good_pinhole(length=holder_hole_l);
             }
         }
     }
-}
-
-module rotating_lock_base_holder() {
-    hold_h=6;
-    screw_l=28;
-    translate([0,hold_h/2,0]) rotate([90,0,0]) eliptical_hold(r1=16, r2=14, h=hold_h);
-    translate([-screw_l/2,0,3])
-    intersection() {
-        screw_ind(screw_th=0.1, screw_l=screw_l);
-        translate([-screw_l*5, -screw_l*5, 0]) cube(screw_l*10, screw_l*10, screw_l*10);
+    
+    // For printing only
+    /*translate([50,0,12.5])
+    rotate([0,0,0])
+    cube(size=[30,60,20], center=true);
+*/
+    }
+    translate([100,0,32.5])
+    rotate([0,0,45])
+    cube(size=[100,100,60], center=true);
     }
 }
-//rotating_lock_base_holder();
+
+module rotating_lock_base_holder(
+cylinder_r=50,
+holder_hole_l=7,
+holder_hole_spacing=15
+) {
+    hold_h=6;
+    hold_l = 28;
+    screw_l= hold_l * 0.9;
+    
+    
+    intersection() {
+        difference() {
+            union() {
+                translate([0,hold_h/2,5]) rotate([90,0,0]) eliptical_hold(r1=16, r2=hold_l/2, h=hold_h);
+        
+                translate([-screw_l/2,0,3])
+                intersection() {
+                    screw_ind(screw_th=0.1, screw_l=screw_l);
+                    translate([-screw_l*5, -screw_l*5, 0]) cube(screw_l*10, screw_l*10, screw_l*10);
+                }
+            }
+            cylinder_offset = 90;
+            translate([0,0,cylinder_offset]) {
+                translate([-100,0,0]) 
+                rotate([0,90,0]) cylinder(r=cylinder_r, h=200);
+
+                translate([holder_hole_spacing/2,0,-cylinder_r+0.05]) rotate([0,180,0]) good_pinhole(length=holder_hole_l);
+            
+                translate([-holder_hole_spacing/2,0,-cylinder_r+0.05])
+                rotate([0,180,0]) good_pinhole(length=holder_hole_l);
+            }
+        }
+        l = hold_l * 1.14;
+        translate([-l/2,-50,-50]) cube(size=[l, 100, 100]);
+    }
+    /*
+    removal_space=0.15/2;
+    translate([-holder_hole_spacing/2,0,cylinder_offset-cylinder_r+removal_space]) cylinder(r=2.2+0.5, h=1);
+    translate([holder_hole_spacing/2,0,cylinder_offset-cylinder_r+removal_space]) cylinder(r=2.2+0.5, h=1);
+    */
+}
 
 module bearing_base_screws(r=30, screw_d=6, z_incision=2.4) {
     screw_count=6;
@@ -295,7 +363,7 @@ module cup(disc_height=4, screw_r=20, hex_width=8.3) {
         }
         union() {
             /* Hex key holder */
-            translate([0,4.2 /* center of mass offset */, 27 /* level of the bed */ - 10 /* incision */]) cylinder(r=hex_width/sqrt(3),h=15,$fn=6);
+            translate([0,4.2 /* center of mass offset */, 27 /* level of the bed */ - 10 /* incision */]) cylindear(r=hex_width/sqrt(3),h=15,$fn=6);
             /* Screw holes */
             intersection() {
                 bearing_base_screws(r=screw_r, screw_d=3, z_incision=-2);
@@ -369,9 +437,7 @@ under_bearing_base_hight=disc_height*2;
 stem_height=40;
 rotation_lock_r=2;
 hex_width=8.3;
-holder_r=2;
-holder_l=7;
-holder_nub=0.3;
+holder_l=16;
 holder_spacing=h2;
 
 //r0=20;
@@ -394,7 +460,7 @@ height=under_bearing_base_hight,
 screw_r=screw_r);
 */
 
-/*
+
 translate([145,0,0])
 //translate([85,0,-stem_height])
 rotating_lock_base(
@@ -413,12 +479,23 @@ stem_height=stem_height,
 rotation_lock_r=rotation_lock_r,
 spacing=spacing/2,
 hex_width=hex_width,
-holder_hole_r=holder_r,
 holder_hole_l=holder_l,
-holder_hole_nub=holder_nub,
+holder_hole_spacing=holder_spacing);
+
+
+/*
+rotating_lock_base_holder(
+cylinder_r=r6,
+holder_hole_l=holder_l,
 holder_hole_spacing=holder_spacing);
 */
 
+/*
+translate([-40,0,0])
+good_pinpeg(length=holder_l);
+translate([-50,0,0])
+good_pinpeg(length=holder_l);
+*/
 
 /*
 translate([200,150,0])
@@ -447,10 +524,11 @@ rotation_lock_r=rotation_lock_r,
 spacing=spacing);
 */
 
-
+/*
 
 translate([-50,150,0])
 cup(disc_height=disc_height, screw_r=screw_r, hex_width=hex_width);
+*/
 
 
 
