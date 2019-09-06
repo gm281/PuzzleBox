@@ -31,13 +31,13 @@ height=3) {
     }
 }
 
-module eliptical_hold(r1=40, r2=20, h=8) {
+module eliptical_hold(r1=40, r2=20, h=8, overlap_h_fraction=0.3) {
     scale([1,r2/r1,1])
     difference() {
         r=r1;
         
         overlap_r=0.85 * r1;
-        overlap_h=0.30 * h;
+        overlap_h=overlap_h_fraction * h;
         
         sp_r = 3*r;
 

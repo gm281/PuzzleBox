@@ -12,7 +12,7 @@ include <shapes-library.scad>
 
 showexample = 0;
 
-$fn=720;
+$fn=60;
 
 module thread(pitch=3.0, radius=40.0, height=10.0, male=true) {
         intersection() {
@@ -335,7 +335,7 @@ module cup_thread(pitch=3, radius=20, height=15, screw_count=3, screw_r=10) {
             z_incision=1;
             
             lineup_on_circle(count=screw_count, translate_x=screw_r, translate_z=z_incision){
-                rotate([0, 180, 0]) screw_ind(screw_th=2.5, screw_l=0);
+                rotate([0, 180, 0]) screw_ind(screw_th=3.3, screw_l=0);
             }
         }
     }
@@ -347,8 +347,8 @@ module cup(disc_height=4, screw_r=20, hex_width=8.3) {
     pitch=3;
     hold_cnt=3;
     cup_thread_screw_r=15;
-    
-    /* Cup */
+/*    
+    // Cup
     difference() {
         union() {
             scale([sc,sc,sc]) rotate([90,0,0]) import("cup.stl");
@@ -362,9 +362,13 @@ module cup(disc_height=4, screw_r=20, hex_width=8.3) {
             translate([0,0,18]) cylinder(d=28, h=2.05);
         }
         union() {
-            /* Hex key holder */
-            translate([0,4.2 /* center of mass offset */, 27 /* level of the bed */ - 10 /* incision */]) cylinder(r=hex_width/sqrt(3),h=15,$fn=6);
-            /* Screw holes */
+            // Hex key holder
+            translate([0,
+            4.2, // center of mass offset
+            27 // level of the bed
+            - 10 // incision
+            ]) cylinder(r=hex_width/sqrt(3),h=15,$fn=6);
+            // Screw holes
             intersection() {
                 bearing_base_screws(r=screw_r, screw_d=3, z_incision=-2);
                 translate([0,0,-12]) cube(size=[50,50,50], center=true);
@@ -372,30 +376,25 @@ module cup(disc_height=4, screw_r=20, hex_width=8.3) {
         }
     }
 
-    /* Thread in the cup */
+    // Thread in the cup
     translate([0,0,165 - th_h])
     mirror([1,0,0])
     threaded_nut(pitch=pitch, inner_diameter=thread_d, outer_diameter=33, height=th_h);
-
-    /* Lid with thread */
-    translate([50,80,th_h])
-    rotate([0,180,0])
-    cup_thread(pitch=pitch, radius=thread_d, height=th_h, screw_count=hold_cnt, screw_r=cup_thread_screw_r);
-    
-    /* Lid top with holds */
+*/    
+    // Lid top with holds
     translate([100,0,0]) {
         difference() {
             union() {
                 sphere_slice(smaller_radius=10, larger_radius=38.5, height=6);
 
                 difference() {
-                    hold_h=4;
+                    hold_h=7;
                     union() {
                         lineup_on_circle(count=hold_cnt, translate_x=-20, translate_z=3) {
                             translate([0,hold_h/2,0])
                             rotate([0,-6,0])
                             rotate([90,0,0])
-                            eliptical_hold(r1=16, r2=10, h=hold_h);
+                            eliptical_hold(r1=16, r2=10, h=hold_h, overlap_h_fraction=0.22);
                         }
                     }
                     translate([-50,-50,-100+0.05]) cube([100,100,100]);
@@ -405,11 +404,17 @@ module cup(disc_height=4, screw_r=20, hex_width=8.3) {
             union() {
                 screw_hole_indent=10;
                 lineup_on_circle(count=hold_cnt, fractional_offset=0.5, translate_x=cup_thread_screw_r, translate_z=-0.05) {
-                    cylinder(r=1,h=screw_hole_indent);
+                    cylinder(d=3,h=screw_hole_indent);
                 }
             }
         }
     }
+/*
+    // Lid with thread
+    translate([50,80,th_h])
+    rotate([0,180,0])
+    cup_thread(pitch=pitch, radius=thread_d, height=th_h, screw_count=hold_cnt, screw_r=cup_thread_screw_r);
+*/    
 }
 
 module rotating_lock_top(outer_r=40, lock_inner_r=30, lock_outer_r=35, height=10, disc_height=4, incision_diameter=6, incision_count=8, screw_r=20, rotation_lock_r=3, spacing=1.5) {
@@ -506,6 +511,13 @@ holder_hole_spacing=holder_spacing);
 */
 
 /*
+translate([-40,0,0])
+good_pinpeg(length=holder_l);
+translate([-50,0,0])
+good_pinpeg(length=holder_l);
+*/
+
+/*
 translate([200,150,0])
 //translate([0,90,0])
 threaded_nut_with_holds(
@@ -513,13 +525,6 @@ pitch=pitch,
 inner_diameter=r1,
 outer_diameter=r2,
 height=h1);
-*/
-
-/*
-translate([-40,0,0])
-good_pinpeg(length=holder_l);
-translate([-50,0,0])
-good_pinpeg(length=holder_l);
 */
 
 /*
